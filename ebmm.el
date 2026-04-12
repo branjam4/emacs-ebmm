@@ -33,6 +33,46 @@
 
 
 ;;; Code:
+(require 'ebmm-model)
+
+;;;; Variables
+(defvar ebmm-elements
+  (let-alist ebmm-raw-alist
+    (seq-keep
+     (pcase-lambda (`('elements
+		      ,(map xmi:idref name)
+		      . ,(map times
+			      properties
+			      ('extendedProperties
+			       `(,(map ('package_name
+					(or (pred (not (seq-contains
+							'("Base Types"
+							  "Model Elements"))))
+					    package_name)))))
+			      attributes)))
+       (and xmi:idref
+	    package_name
+	    (let-alist (car properties)
+	      (append
+	       (let-alist (car times)
+		 (list :name name
+		       :eaid xmi:idref
+		       :type package_name
+		       :created .created
+		       :modified .modified))
+	       (list :documentation .documentation)
+	       (list :attributes
+		     (if attributes
+			 (seq-keep
+			  (pcase-lambda
+			    (`(attribute ,(map name)
+					 . ,(map ('documentation
+						  `(,(map value))))))
+			    (if name (list :attr-name name
+					   :attr-doc value)))
+			  attributes)))))))
+     .xmi:XMI.xmi:Extension.elements))
+  "Elements from the Enterprise Business Motivation Model.")
 
 (provide 'ebmm)
 ;;; ebmm.el ends here
