@@ -74,5 +74,30 @@
      .xmi:XMI.xmi:Extension.elements))
   "Elements from the Enterprise Business Motivation Model.")
 
+(defvar ebmm-viewpoints
+  (let-alist ebmm-raw-alist
+    (seq-keep
+     (pcase-lambda (`(_ ,(map xmi:id) .
+			,(map ('elements `(_ _ . ,elements))
+			      properties project)))
+       (if elements
+	   (let-alist (car properties)
+	     (append
+	      (list :name .name)
+	      (let-alist (car project)
+		(list :eaid xmi:id
+		      :created .created
+		      :modified .modified))
+	      (list :documentation .documentation)
+	      (list :elements
+		    (seq-mapcat (pcase-lambda (`(element ,(map subject)))
+				  (seq-keep (pcase-lambda ((map :eaid :name))
+					      (if (string= eaid subject)
+						  name))
+					    ebmm-elements))
+				elements))))))
+     .xmi:XMI.xmi:Extension.diagrams))
+  "Viewpoints from the Enterprise Business Motivation Model.")
+
 (provide 'ebmm)
 ;;; ebmm.el ends here
