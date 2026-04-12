@@ -99,5 +99,50 @@
      .xmi:XMI.xmi:Extension.diagrams))
   "Viewpoints from the Enterprise Business Motivation Model.")
 
+;;;; Functions
+;;;;; Superclasses
+(defun ebmm-generalized ()
+  "Check superclasses slot for EBMM elements to define first."
+  (thread-last ebmm-elements
+	       (seq-mapcat (pcase-lambda ((map :superclasses))
+			     superclasses))
+	       seq-uniq))
+
+(defun ebmm-add-superclasses-to-element-plist ()
+  "If an element is generalizable in the EBMM, note it before creating classes.
+In the element's `ebmm-elements' superclasses property, add its
+generalized element."
+  (let-alist ebmm-raw-alist
+    (seq-keep
+     (pcase-lambda
+       (`('connector . ,(map source target properties)))
+       (let-alist (car properties)
+	 (if (string= .ea_type "Generalization")
+	     (pcase-let* ((`(,(map xmi:idref))
+			   source)
+			  (`(target
+			     ,(map ('model
+				    `(model . ,(map ('name superclass))))))
+			   target)
+			  (element
+			   (seq-find (pcase-lambda ((map :eaid))
+				       (string= eaid xmi:idref))
+				     ebmm-elements))
+			  (superclasses (plist-get element :superclasses)))
+	       (plist-put
+		element
+		:superclasses (seq-uniq (append superclasses (list superclass))))))))
+     .xmi:XMI.xmi:Extension.connectors))
+  (thread-last ebmm-elements
+	       (seq-sort
+		(pcase-lambda
+		  ((map (:name (app (seq-position (ebmm-generalized))
+				    name)))
+		   (map (:name (app (seq-position (ebmm-generalized))
+				    name2))))
+		  (or (and name name2 (< name name2))
+		      (not name2))))
+	       (setf ebmm-elements)))
+
 (provide 'ebmm)
 ;;; ebmm.el ends here
