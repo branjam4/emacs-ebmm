@@ -27,7 +27,7 @@
 ;; those objects.  The EBMM is a metamodel, a frame for handling many
 ;; smaller models at once.  The Emacs library interfacing it will not
 ;; do much on its own; it requires integration with business
-;; artifacts.  So, for example, with `ebmm-customer-type' being once
+;; artifacts.  So, for example, with `ebmm-customer-type' being one
 ;; of the classes, locate (or create) where customer profiles live,
 ;; and import notes/references into the metamodel.
 
