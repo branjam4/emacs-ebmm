@@ -126,6 +126,10 @@ It depends on SUPERCLASSES and has DOCUMENTATION."
      .xmi:XMI.xmi:Extension.elements))
   "Elements from the Enterprise Business Motivation Model.")
 
+(defvar ebmm-element-relationship-alist
+  '()
+  "Store relationships defined in the Enterprise Business Motivation Model.")
+
 (defvar ebmm-viewpoints
   (let-alist ebmm-raw-alist
     (seq-keep
@@ -152,6 +156,73 @@ It depends on SUPERCLASSES and has DOCUMENTATION."
   "Viewpoints from the Enterprise Business Motivation Model.")
 
 ;;;; Functions
+;;;;; Relationships
+(defun ebmm-add-relationships ()
+  "Store relationships defined in the Enterprise Business Motivation Model."
+  (let-alist ebmm-raw-alist
+    (seq-keep
+     (pcase-lambda
+       (`('connector
+	  . ,(map properties
+		  ('source
+		   `(source
+		     . ,(map ('model
+			      `(,(map ('name source-name))))
+			     ('type
+			      `(,(map ('aggregation
+				       (or
+					(pred (string= "none"))
+					source-aggregation))
+				      ('multiplicity source-multiplicity)))))))
+		  ('target
+		   `(target
+		     . ,(map ('model
+			      `(,(map ('name target-name))))
+			     ('type
+			      `(,(map ('aggregation
+				       (or
+					(pred (string= "none"))
+					target-aggregation))
+				      ('multiplicity target-multiplicity)))))))
+		  ('labels `(,(map mt mb rb lb)))))) ; mid-top/bot,
+					; right/left-bot
+       (let-alist (car properties)
+	 (and (member .ea_type '("Association"
+				 "Aggregation"))
+	      (or (string= .ea_type "Aggregation")
+		  mt source-aggregation target-aggregation)
+	      (pcase-let ((`(,source-name ,target-name)
+			   (if (string= .direction "Destination -> Source")
+			       (list target-name source-name)
+			     (list source-name target-name))))
+		(add-to-list
+		 'ebmm-element-relationship-alist
+		 `(,(intern (ebmm-serialize-name-to-class source-name))
+		   ,(intern (ebmm-serialize-name-to-class target-name))
+		   ,@(seq-mapcat
+		      (pcase-lambda (`(,key ,item))
+			(if item `(,key ,item)))
+		      (list (list :label (if mt (downcase mt)
+					   ""))
+			    (pcase (list .ea_type .direction)
+			      ((guard target-aggregation)
+			       (list :target-aggregation
+				     target-aggregation))
+			      ((guard source-aggregation)
+			       (list :source-aggregation
+				     source-aggregation))
+			      (`("Aggregation"
+				 "Source -> Destination")
+			       (list :target-aggregation .subtype))
+			      (`("Aggregation"
+				 "Destination -> Source")
+			       (list :source-aggregation .subtype)))
+			    (list :source-multiplicity
+				  source-multiplicity)
+			    (list :target-multiplicity
+				  target-multiplicity)))))))))
+     .xmi:XMI.xmi:Extension.connectors)))
+
 ;;;;; Superclasses
 (defun ebmm-generalized ()
   "Check superclasses slot for EBMM elements to define first."
