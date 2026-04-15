@@ -33,7 +33,7 @@
 
 
 ;;; Code:
-(require 'ebmm-model)
+(require 'ebmm-elements)
 
 ;;;; Class Variables
 (defvar ebmm-objects nil
@@ -88,44 +88,6 @@ It depends on SUPERCLASSES and has DOCUMENTATION."
    (list :abstract t)))
 
 ;;;; Variables
-(defvar ebmm-elements
-  (let-alist ebmm-raw-alist
-    (seq-keep
-     (pcase-lambda (`('elements
-		      ,(map xmi:idref name)
-		      . ,(map times
-			      properties
-			      ('extendedProperties
-			       `(,(map ('package_name
-					(or (pred (not (seq-contains
-							'("Base Types"
-							  "Model Elements"))))
-					    package_name)))))
-			      attributes)))
-       (and xmi:idref
-	    package_name
-	    (let-alist (car properties)
-	      (append
-	       (let-alist (car times)
-		 (list :name name
-		       :eaid xmi:idref
-		       :type package_name
-		       :created .created
-		       :modified .modified))
-	       (list :documentation .documentation)
-	       (list :attributes
-		     (if attributes
-			 (seq-keep
-			  (pcase-lambda
-			    (`(attribute ,(map name)
-					 . ,(map ('documentation
-						  `(,(map value))))))
-			    (if name (list :attr-name name
-					   :attr-doc value)))
-			  attributes)))))))
-     .xmi:XMI.xmi:Extension.elements))
-  "Elements from the Enterprise Business Motivation Model.")
-
 (defvar ebmm-element-relationship-alist
   '()
   "Store relationships defined in the Enterprise Business Motivation Model.")
@@ -222,50 +184,6 @@ It depends on SUPERCLASSES and has DOCUMENTATION."
 			    (list :target-multiplicity
 				  target-multiplicity)))))))))
      .xmi:XMI.xmi:Extension.connectors)))
-
-;;;;; Superclasses
-(defun ebmm-generalized ()
-  "Check superclasses slot for EBMM elements to define first."
-  (thread-last ebmm-elements
-	       (seq-mapcat (pcase-lambda ((map :superclasses))
-			     superclasses))
-	       seq-uniq))
-
-(defun ebmm-add-superclasses-to-element-plist ()
-  "If an element is generalizable in the EBMM, note it before creating classes.
-In the element's `ebmm-elements' superclasses property, add its
-generalized element."
-  (let-alist ebmm-raw-alist
-    (seq-keep
-     (pcase-lambda
-       (`('connector . ,(map source target properties)))
-       (let-alist (car properties)
-	 (if (string= .ea_type "Generalization")
-	     (pcase-let* ((`(,(map xmi:idref))
-			   source)
-			  (`(target
-			     ,(map ('model
-				    `(model . ,(map ('name superclass))))))
-			   target)
-			  (element
-			   (seq-find (pcase-lambda ((map :eaid))
-				       (string= eaid xmi:idref))
-				     ebmm-elements))
-			  (superclasses (plist-get element :superclasses)))
-	       (plist-put
-		element
-		:superclasses (seq-uniq (append superclasses (list superclass))))))))
-     .xmi:XMI.xmi:Extension.connectors))
-  (thread-last ebmm-elements
-	       (seq-sort
-		(pcase-lambda
-		  ((map (:name (app (seq-position (ebmm-generalized))
-				    name)))
-		   (map (:name (app (seq-position (ebmm-generalized))
-				    name2))))
-		  (or (and name name2 (< name name2))
-		      (not name2))))
-	       (setf ebmm-elements)))
 
 ;;;;; Build classes
 ;;;;; Building EBMM Elements and Views
