@@ -267,15 +267,6 @@ generalized element."
 		      (not name2))))
 	       (setf ebmm-elements)))
 
-;;;;; Serialization
-(defun ebmm-serialize-name-to-class (name)
-  "Remove spaces in NAME, replacing with a hyphen or alternate punctuation."
-  (thread-last name
-	       (string-replace " / " "/")
-	       (string-replace " " "-")
-	       downcase
-	       (format "ebmm-%s")))
-
 ;;;;; Build classes
 ;;;;; Building EBMM Elements and Views
 (defun ebmm-make-element-classes ()
