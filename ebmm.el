@@ -35,58 +35,6 @@
 ;;; Code:
 (require 'ebmm-elements)
 
-;;;; Class Variables
-(defvar ebmm-objects nil
-  "Objects for the Enterprise Business Motivation Model.")
-
-;;;; Classes
-(defclass ebmm-base (eieio-instance-tracker eieio-instance-inheritor)
-  ((tracking-symbol :initform 'ebmm-objects)
-   (eaid :initarg :eaid
-	 :documentation "Lookup an element defined in the EBMM by this ID.")
-   (created :initarg :created
-	    :documentation
-	    "When an element (or its instance) was first defined in the EBMM.")
-   (modified :initarg :modified
-	     :documentation
-	     "When an element (or its instance) was last modified in the EBMM.")
-   (tags :initarg :tags
-	 :initform ()
-	 :documentation
-	 "Extra field for eieio instances of EBMM classes.
-Optionally filter instances showing up in a view by tag queries.")
-   (value :initarg :value
-	  :initform nil
-	  :documentation
-	  "Value for this instance of the EBMM element.
-Control how this will be displayed in views by optionally adding context
-to the `ebmm-generate-view' method—for example, by printing the object in a
-truncated or specialized format depending on the major and minor modes
-for the view."))
-  "Base class for elements in the Enterprise Business Motivation Model."
-  :abstract t)
-
-;;;; Class Generating Macro
-(defmacro defebmm-class (name superclasses slots documentation)
-  "Define class function NAME with SLOTS.
-It depends on SUPERCLASSES and has DOCUMENTATION."
-  (declare (debug defclass))
-  (append
-   (list 'defclass (intern (or name "ebmm-anonymous"))
-	 (seq-map #'intern
-		  (if (seq-find (lambda (c)
-				  (ignore-errors
-				    (child-of-class-p (intern-soft c)
-						      'ebmm-base)))
-				superclasses)
-		      superclasses
-		    (append (list "ebmm-base") superclasses)))
-	 slots)
-   (if documentation
-       (list documentation)
-     '())
-   (list :abstract t)))
-
 ;;;; Variables
 (defvar ebmm-element-relationship-alist
   '()
@@ -184,46 +132,6 @@ It depends on SUPERCLASSES and has DOCUMENTATION."
 			    (list :target-multiplicity
 				  target-multiplicity)))))))))
      .xmi:XMI.xmi:Extension.connectors)))
-
-;;;;; Build classes
-;;;;; Building EBMM Elements and Views
-(defun ebmm-make-element-classes ()
-  "Create eieio classes from EBMM elements.
-For this function, it is assumed `ebmm-elements' contains a plist
- corresponding with slots in class function `ebmm-base'.  See
- `defebmm-class' for more details."
-  (ebmm-add-superclasses-to-element-plist)
-  (seq-keep (pcase-lambda ((map :name :eaid
-				:superclasses
-				:created :modified
-				:documentation
-				:attributes))
-	      (eval
-	       `(defebmm-class ,(ebmm-serialize-name-to-class name) ; Class name
-		 ;; Superclasses
-		 ,(seq-map #'ebmm-serialize-name-to-class superclasses)
-		 ;; Slots
-		 ,(append
-		   (list `(eaid :initform ,eaid)
-			 `(created :initform ,created)
-			 `(modified :initform ,modified))
-		   (seq-keep
-		    (pcase-lambda ((map :attr-name
-					:attr-doc))
-		      (if attr-name
-			  (list
-			   (intern (ebmm-serialize-name-to-class attr-name))
-			   :init-arg
-			   (intern
-			    (format
-			     ":%s"
-			     (ebmm-serialize-name-to-class attr-name)))
-			   :initform nil
-			   :documentation attr-doc)))
-		    attributes))
-		 ;; Docs
-		 ,documentation)))
-	    ebmm-elements))
 
 (provide 'ebmm)
 ;;; ebmm.el ends here
