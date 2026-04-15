@@ -28,6 +28,8 @@
 
 
 ;;; Code:
+(require 'ebmm-elements)
+
 (defun ebmm-serialize-name-to-class (name)
   "Remove spaces in NAME, replacing with a hyphen or alternate punctuation."
   (thread-last name
