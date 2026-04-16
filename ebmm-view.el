@@ -98,5 +98,11 @@ For this function, it is assumed `ebmm-viewpoints' contains a plist
 		  functions))
 	  ebmm-view-filters-alist))
 
+(defun ebmm-view-completing-read ()
+  "Completing read for EBMM views."
+  (let ((viewpoints-alist (object-assoc-list 'name ebmm-class-viewpoints)))
+    (alist-get (completing-read "Choose a Viewpoint: " viewpoints-alist)
+	       viewpoints-alist nil nil #'string=)))
+
 (provide 'ebmm-view)
 ;;; ebmm-view.el ends here
