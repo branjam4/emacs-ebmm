@@ -30,6 +30,13 @@
 ;;; Code:
 (require 'ebmm-elements)
 
+;;;; Custom Variables
+(defcustom ebmm-view-filters-alist
+  '()
+  "Set filters for viewpoints."
+  :type '(alist :key-type string
+		:value-type (repeat function)))
+
 ;;;; Variables
 (defvar ebmm-view-plist
   (let-alist ebmm-raw-alist
@@ -55,6 +62,41 @@
 				elements))))))
      .xmi:XMI.xmi:Extension.diagrams))
   "Viewpoints from the Enterprise Business Motivation Model.")
+
+;;;; Functions
+(defun ebmm-view-plist-filter-to-elements ()
+  "Filter `ebmm-viewpoints' to interesting ones that contain elements."
+  (seq-filter
+   (pcase-lambda ((map :elements))
+     elements)
+   ebmm-view-plist))
+
+(defun ebmm-view-make-viewpoints ()
+  "Create eieio objects from EBMM viewpoints.
+For this function, it is assumed `ebmm-viewpoints' contains a plist
+ corresponding with slots in class function `ebmm-viewpoint'."
+  (seq-keep
+   (pcase-lambda
+     ((map :name :eaid :created :modified :documentation :elements))
+     (ebmm-viewpoint
+      :name name :eaid eaid
+      :created created :modified modified
+      :value (seq-map #'ebmm-serialize-name-to-class-intern elements)
+      :filters (alist-get name ebmm-view-filters-alist
+			  nil nil #'string=)
+      :viewpoint-doc documentation))
+	    (ebmm-view-plist-filter-to-elements)))
+
+(defun ebmm-view-set-viewpoint-filters ()
+  "Set viewpoint filters based on `ebmm-viewpoint-filters-alist'."
+  (interactive)
+  (seq-do (pcase-lambda (`(,name . ,functions))
+	    (setf (slot-value (eieio-instance-tracker-find
+			       name 'name
+			       'ebmm-class-viewpoints)
+			      'filters)
+		  functions))
+	  ebmm-view-filters-alist))
 
 (provide 'ebmm-view)
 ;;; ebmm-view.el ends here
