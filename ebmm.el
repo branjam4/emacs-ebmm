@@ -33,6 +33,47 @@
 
 
 ;;; Code:
+(require 'ebmm-class)
+(require 'ebmm-view)
+
+;;;; Mode
+(define-minor-mode ebmm-mode
+  "Activate tracking Enterprise Business Motivation Model elements in Emacs.
+This mode will initialize class and relationship variables if they are
+nil, and in Lisp programs accepts an ARG that should represent an
+object of class function `ebmm-viewpoint'."
+  :lighter " EBMM-View"
+  (when ebmm-mode
+    ;; Running this twice defines superclasses in the correct order.
+    (condition-case nil (ebmm-class-generate-elements)
+      (error (ebmm-class-generate-elements)))
+    (unless ebmm-associations-alist
+      (ebmm-associations-add-all)
+      (ebmm-associations-make-generalizations))
+    (or ebmm-class-viewpoints (ebmm-view-make-viewpoints)))
+  (setf ebmm-mode
+	(pcase arg
+	  ((guard (not ebmm-mode)) nil)
+	  ((and (pred (object-p))
+		(app (object-class-name)
+		     (pred (child-of-class-p 'ebmm-viewpoint))))
+	   arg)
+	  ((pred (stringp)) (or (eieio-instance-tracker-find
+				 arg 'name
+				 'ebmm-class-viewpoints)
+				(eieio-instance-tracker-find
+				 ebmm-default-viewpoint 'name
+				 'ebmm-class-viewpoints)))
+	  ((pred (symbolp)) (eieio-instance-tracker-find
+			     ebmm-default-viewpoint 'name
+			     'ebmm-class-viewpoints))
+	  ((or (pred (not (integerp)))
+	       (pred (> (let views (length ebmm-class-viewpoints)))))
+	   (seq-elt (ebmm-generalized) (1- views)))
+	  (_ (or (eieio-instance-tracker-find
+		  ebmm-default-viewpoint 'name
+		  'ebmm-class-viewpoints)
+		 ebmm-mode)))))
 
 (provide 'ebmm)
 ;;; ebmm.el ends here
