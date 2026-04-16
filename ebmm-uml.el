@@ -65,5 +65,14 @@
 	    (slot-value ebmm-mode 'value))
 	       "\n\n"))
 
+(defun ebmm-uml-print-view (associations)
+  "Print a set of ASSOCIATIONS as uml."
+  (string-join
+   (seq-mapcat (pcase-lambda
+		 (`(to . ,associations))
+		 associations)
+	       associations)
+	       "\n"))
+
 (provide 'ebmm-uml)
 ;;; ebmm-uml.el ends here
