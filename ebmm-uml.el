@@ -74,5 +74,60 @@
 	       associations)
 	       "\n"))
 
+(defun ebmm-uml-view-extra ()
+  "Generate list of strings representing extra uml options."
+  (with-slots (name) ebmm-mode
+    (pcase ebmm-uml-view-extra
+      ((pred functionp)
+       (funcall ebmm-uml-view-extra name))
+      ((pred (seq-every-p #'stringp))
+       ebmm-uml-view-extra))))
+
+;;;; Methods
+(cl-defmethod ebmm-view-generate ((view ebmm-viewpoint)
+				  &context ((cl-type-of ebmm-mode)
+					    (subclass ebmm-viewpoint)))
+  "Print a VIEW by listing its associated elements via uml."
+  (if (eql view ebmm-mode)
+      (with-slots (name value filters) view
+	(let ((buffer (get-buffer-create (format "*EBMM %s*" name)))
+	      (ebmm-view-filter-functions
+	       (seq-uniq (append ebmm-view-filter-functions filters)))
+	      (ebmm-associations-alist ebmm-associations-alist)
+	      (ebmm-uml-view-style ebmm-uml-view-style))
+	  (with-current-buffer buffer
+	    (or (eql major-mode 'plantuml-mode)
+		(and (featurep (seq-find (apply-partially #'seq-contains features)
+				     '(plantuml-mode plantuml-mode-autoloads)))
+		 (plantuml-mode)))
+	    (ebmm-viewpoint-mode view)
+	    (erase-buffer)
+	    (when
+		(run-hook-with-args-until-failure
+		 'ebmm-view-filter-functions
+		 value)
+	      (insert "@startuml\n\n' Classes\n")
+	      (save-excursion
+		(insert (ebmm-uml-print-element-classes))
+		(insert (string-join
+			 `("\n"
+			   ,@ebmm-uml-view-style
+			   "\n")
+			 "\n"))
+		(insert "' Relationships\n")
+		(insert
+		 (string-join
+		  (seq-mapcat (pcase-lambda
+				((app (ebmm-associations _ nil) (map to)))
+				to)
+			      value)
+		  "\n"))
+		(insert (string-join
+			 `("\n" "' Extra"
+			   ,@(ebmm-uml-view-extra)
+			   "\n@enduml")
+			 "\n")))))
+	  (display-buffer buffer)))))
+
 (provide 'ebmm-uml)
 ;;; ebmm-uml.el ends here

@@ -41,6 +41,15 @@
   "When activating `ebmm-viewpoint-mode' with no args, use this view by default."
   :type 'string)
 
+(defcustom ebmm-view-filter-functions
+  '()
+  "Abnormal hook whose functions take a plist argument.
+The plist is likely in service of a view in the EBMM.  A viewpoint
+object adds specific filters depending on the needs of the view
+stakeholders.  Try functions in order; all functions must return
+non-nil, else the hook returns nil."
+  :type 'hook)
+
 ;;;; Variables
 (defvar ebmm-view-plist
   (let-alist ebmm-raw-alist
