@@ -40,6 +40,9 @@
 (defvar ebmm-objects nil
   "Objects for the Enterprise Business Motivation Model.")
 
+(defvar ebmm-class-viewpoints nil
+  "Viewpoints for the Enterprise Business Motivation Model, tracked in Emacs.")
+
 ;;;; Classes
 (defclass ebmm-base (eieio-instance-tracker eieio-instance-inheritor)
   ((tracking-symbol :initform 'ebmm-objects)
@@ -66,6 +69,35 @@ truncated or specialized format depending on the major and minor modes
 for the view."))
   "Base class for elements in the Enterprise Business Motivation Model."
   :abstract t)
+
+(defclass ebmm-viewpoint (ebmm-base)
+  ((tracking-symbol :initform 'ebmm-class-viewpoints)
+   (eaid :documentation "Lookup a viewpoint defined in the EBMM by this ID.")
+   (name :initarg :name :documentation "Name for the viewpoint.")
+   (value :documentation
+	  "Elements within this view.
+Control how these will be displayed by optionally adding context to the
+`object-print' method—for example, by printing the object in a truncated
+or specialized format depending on the major and minor modes for the
+view.")
+   (filters :initarg :filters
+	    :initform '()
+	    :documentation
+	    "Some relationship types are helpful in domains and taxonomies, but less
+helpful when sharing a conceptual view with others.")
+   (viewpoint-doc
+    :initarg :viewpoint-doc
+    :documentation
+    "Views are instanced in this implementation, unlike elements.
+Use this slot to fill in or add info on the purpose and scope of the
+view."))
+  "Class for viewpoints in the Enterprise Business Motivation Model.
+
+A viewpoint, as described in ISO 42010, is a coherent intersection of
+stakeholder concerns.  By understanding the viewpoints we seek to
+address, business architects can focus in on a subset of concepts needed
+to address them.  For each viewpoint, a subset of the entire EBMM can be
+described and used.")
 
 ;;;; Class Generating Macro
 (defmacro defebmm-class (name superclasses slots documentation)
