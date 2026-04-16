@@ -37,6 +37,10 @@
   :type '(alist :key-type string
 		:value-type (repeat function)))
 
+(defcustom ebmm-default-viewpoint "Primary View"
+  "When activating `ebmm-viewpoint-mode' with no args, use this view by default."
+  :type 'string)
+
 ;;;; Variables
 (defvar ebmm-view-plist
   (let-alist ebmm-raw-alist
