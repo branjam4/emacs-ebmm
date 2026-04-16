@@ -28,7 +28,7 @@
 
 
 ;;; Code:
-(require 'ebmm-elements)
+(require 'ebmm-serialize)
 
 ;;;; Custom Variables
 (defcustom ebmm-view-filters-alist
