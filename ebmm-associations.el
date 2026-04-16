@@ -137,6 +137,26 @@
 				     (format " : %s" label)))))
 		     relationships))))))
 
+(defun ebmm-associations-make-generalizations ()
+  "Store generalizations defined in the Enterprise Business Motivation Model."
+  (seq-keep
+   (pcase-lambda
+     ((map :name :superclasses))
+     (and superclasses
+	  (seq-map
+	   (pcase-lambda
+	     ((and (let source-name
+		     (intern (ebmm-serialize-name-to-class name)))
+		   (app ebmm-serialize-name-to-class target-name)))
+	     (add-to-list
+	      'ebmm-associations-alist
+	      (list
+	       source-name
+	       (intern target-name)
+	       :target-aggregation "Generalization")))
+	   superclasses)))
+   ebmm-elements))
+
 ;;;; Methods
 ;;;;; Relationship
 (cl-defmethod ebmm-associations ((ele-type1 string) (ele-type2 string))

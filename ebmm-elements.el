@@ -106,9 +106,9 @@ generalized element."
   (thread-last ebmm-elements
 	       (seq-sort
 		(pcase-lambda
-		  ((map (:name (app (seq-position (ebmm-generalized))
+		  ((map (:name (app (seq-position (ebmm-elements-generalized))
 				    name)))
-		   (map (:name (app (seq-position (ebmm-generalized))
+		   (map (:name (app (seq-position (ebmm-elements-generalized))
 				    name2))))
 		  (or (and name name2 (< name name2))
 		      (not name2))))
