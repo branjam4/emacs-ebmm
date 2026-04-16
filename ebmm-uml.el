@@ -57,5 +57,13 @@
   :type '(choice (repeat string)
 		 function))
 
+;;;; Functions
+(defun ebmm-uml-print-element-classes ()
+  "Print all elements in a view as uml classes."
+  (string-join
+   (seq-map #'ebmm-serialize-to-uml-class
+	    (slot-value ebmm-mode 'value))
+	       "\n\n"))
+
 (provide 'ebmm-uml)
 ;;; ebmm-uml.el ends here
