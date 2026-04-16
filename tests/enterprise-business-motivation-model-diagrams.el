@@ -69,5 +69,50 @@ Return TEST instead of \"t\"."
   + RiskType
 }")))
 
+(ert-deftest ebmm-test-uml-print-view ()
+    "Print a diagram derived from an Enterprise Business Motivation Model view.
+The view contains a list of elements.  Those elements have associations
+in `ebmm-element-relationship-alist'.  Only associations where both
+elements appear in the view should show up in the diagram."
+  (let (ebmm-mode ebmm-class-viewpoints)
+    (ebmm-viewpoint
+     :name "Test View" :eaid "EAID_TEST"
+     :created (current-time) :modified (current-time)
+     :value '(ebmm-business-strategy
+	      ebmm-business-initiative/program
+	      ebmm-business-model
+	      ebmm-influencer
+	      ebmm-objective
+	      ebmm-mission
+	      ebmm-vision)
+     :viewpoint-doc "This is a view used for testing. You should not see this outside of a
+testing environment.")
+    (ebmm-mode "Test View")
+    (should-expect (cl-type-of ebmm-mode) 'ebmm-viewpoint)
+    (should (ebmm-serialize-to-readable "ebmm-business-construct-or-model"))
+    (should-expect (ebmm-serialize-to-readable "ebmm-use-case/user-story")
+		   "Use Case / User Story")
+    (should-expect (ebmm-uml-print-view
+		    (ebmm-associations 'ebmm-mission nil))
+		   "\"Mission\" --> \"Vision\" : makes operative the")
+    (should-expect
+     (string-join
+      (seq-sort
+       #'string<
+       (string-lines
+	(ebmm-uml-print-view
+	 (ebmm-associations 'ebmm-business-strategy nil))))
+      "\n")
+     "\"Business Strategy\" \"1..*\" --o \"1..*\" \"Business Initiative / Program\" : motivates
+\"Business Strategy\" --> \"Business Model\" : motivates change towards
+\"Business Strategy\" --> \"Business Strategy\" : enables
+\"Business Strategy\" --> \"Business Strategy\" : influences
+\"Business Strategy\" --> \"Influencer\" : responds to
+\"Business Strategy\" --> \"Objective\" : achieves")
+    ;; Business scorecard not in test view
+    (should-error (ebmm-associations 'ebmm-business-scorecard nil))
+    ;; Mission is in test view
+    (should (ebmm-associations 'ebmm-mission nil))))
+
 (provide 'enterprise-business-motivation-model-diagrams)
 ;;; enterprise-business-motivation-model-diagrams.el ends here
