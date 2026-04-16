@@ -52,5 +52,22 @@ Return TEST instead of \"t\"."
 		      (quote ,expected)))))
     `(should-not ,test)))
 
+(ert-deftest ebmm-test-uml-print-element-classes ()
+  "Print elements from an EBMM view as uml classes."
+  (let (ebmm-mode ebmm-class-viewpoints)
+    (should (setf ebmm-mode
+		  (ebmm-viewpoint
+		   :name "Test View" :eaid "EAID_TEST"
+		   :created (current-time) :modified (current-time)
+		   :value '(ebmm-architectural-risk)
+		   :viewpoint-doc "This is a view used for testing.
+ You should not see this outside of a testing environment.")))
+    (should (ebmm-mode "Test View"))
+    (should-expect (ebmm-uml-print-element-classes)
+		   "class \"Architectural Risk\" {
+  + RiskAmount
+  + RiskType
+}")))
+
 (provide 'enterprise-business-motivation-model-diagrams)
 ;;; enterprise-business-motivation-model-diagrams.el ends here
