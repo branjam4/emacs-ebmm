@@ -56,7 +56,20 @@
 	(append '((ebmm-brand-promise ebmm-value-proposition
 				      :label ""
 				      :source-aggregation "none"))
-		r)))))
+		r))))
+    ("EITA Viewpoint"
+     (lambda (r)
+       (seq-uniq
+	(append
+	 (seq-keep
+	  (lambda (relation)
+	    (pcase relation
+	      (`(ebmm-application ebmm-business-or-information-tool
+				  . ,_rest)
+	       (plist-put relation :label "is a"))))
+	  (default-toplevel-value
+	   'ebmm-associations-alist))
+	 r)))))
   "Abnormal hook whose functions take a plist argument.
 The plist is likely in service of a view in the EBMM.  A viewpoint
 object adds specific filters depending on the needs of the view
