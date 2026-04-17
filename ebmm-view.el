@@ -161,6 +161,20 @@ non-nil, else the hook returns nil."
   "Viewpoints from the Enterprise Business Motivation Model.")
 
 ;;;; Functions
+;;;;; For view filtering
+(defun ebmm-view--remove-blank-composites (relationships)
+  "Remove composite aggregations in plist RELATIONSHIPS.
+This changes `ebmm-element-relationship-alist', make sure it's locally
+bound before changing it."
+  (seq-remove
+   (pcase-lambda
+     (`(,source ,target . ,(map :target-aggregation :label)))
+     (and (member source relationships)
+	  (string-empty-p label)
+	  target-aggregation))
+   relationships))
+
+;;;;; General
 (defun ebmm-view-plist-filter-to-elements ()
   "Filter `ebmm-viewpoints' to interesting ones that contain elements."
   (seq-filter
