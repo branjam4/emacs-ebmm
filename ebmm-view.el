@@ -101,7 +101,32 @@
 	    ((app (plist-get _ :target-aggregation)
 		  (pred (string= "Generalization")))
 	     relation)))
-	r))))
+	r)))
+    ("Business Model Assessment Viewpoint"
+     (lambda (r)
+       (thread-last
+	 r
+	 (seq-map
+	  (lambda (relation)
+	    (pcase relation
+	      (`(ebmm-application ebmm-business-or-information-tool
+				  . ,_rest)
+	       (plist-put relation :label "is a"))
+	      (`(,_influences ebmm-influencer
+			      . ,(map :target-aggregation))
+	       (plist-put relation :label ""))
+	      (`(,_judgment ebmm-business-judgment
+			    . ,(map :target-aggregation))
+	       (if (string= target-aggregation "Generalization")
+		   (plist-put relation :label "")))
+	      (_ relation))))
+	 (append
+	  '((ebmm-degree-of-rivalry ebmm-industry :label "")
+	    (ebmm-threat-of-substitutes ebmm-industry :label "")
+	    (ebmm-barriers-to-entry ebmm-industry :label "")
+	    (ebmm-supplier-power ebmm-industry :label "")
+	    (ebmm-buyer-power ebmm-industry :label "")))
+	 seq-uniq))))
   "Abnormal hook whose functions take a plist argument.
 The plist is likely in service of a view in the EBMM.  A viewpoint
 object adds specific filters depending on the needs of the view
