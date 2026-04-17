@@ -126,7 +126,8 @@
 	    (ebmm-barriers-to-entry ebmm-industry :label "")
 	    (ebmm-supplier-power ebmm-industry :label "")
 	    (ebmm-buyer-power ebmm-industry :label "")))
-	 seq-uniq))))
+	 seq-uniq)))
+    ("Business Model Viewpoint" ebmm-view--remove-blank-composites))
   "Abnormal hook whose functions take a plist argument.
 The plist is likely in service of a view in the EBMM.  A viewpoint
 object adds specific filters depending on the needs of the view
