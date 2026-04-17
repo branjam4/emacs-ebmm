@@ -69,7 +69,39 @@
 	       (plist-put relation :label "is a"))))
 	  (default-toplevel-value
 	   'ebmm-associations-alist))
-	 r)))))
+	 r))))
+    ("Structural View"
+     (lambda (r)
+       (thread-last ebmm-uml-view-style
+		    (seq-remove
+		     (apply-partially #'string-match-p "^left.+direction$"))
+		    (seq-map
+		     (apply-partially #'string-replace "polyline" "ortho"))
+		    (setf ebmm-uml-view-style)))
+     (lambda (r)
+       (seq-keep
+	(lambda (relation)
+	  (pcase relation
+	    (`(ebmm-key-performance-indicator ebmm-process-metric
+					      . ,_rest)
+	     (plist-put relation :label "may be a"))
+	    (`(ebmm-application ebmm-business-or-information-tool
+				. ,_rest)
+	     (plist-put relation :label "is a"))
+	    (`(ebmm-business-construct-or-model ,_taxonomy
+						. ,_rest)
+	     relation)
+	    (`(,_rules-or-policy ebmm-directive
+				 . ,(map :target-aggregation))
+	     relation)
+	    (`(,_mission-or-vision ebmm-principle
+				   . ,(map :target-aggregation))
+	     (if (string= target-aggregation "Generalization")
+		 relation))
+	    ((app (plist-get _ :target-aggregation)
+		  (pred (string= "Generalization")))
+	     relation)))
+	r))))
   "Abnormal hook whose functions take a plist argument.
 The plist is likely in service of a view in the EBMM.  A viewpoint
 object adds specific filters depending on the needs of the view
