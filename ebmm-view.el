@@ -42,7 +42,21 @@
   :type 'string)
 
 (defcustom ebmm-view-filter-functions
-  '()
+  '(("Customer Viewpoint"
+     (lambda (r)
+       (seq-remove
+	(pcase-lambda
+	  (`(,source ,target . ,(map :target-aggregation :label)))
+	  (and target-aggregation
+	       (eql target 'ebmm-business-model)
+	       (not (eql source 'ebmm-products-and-services))))
+	r))
+     (lambda (r)
+       (seq-uniq
+	(append '((ebmm-brand-promise ebmm-value-proposition
+				      :label ""
+				      :source-aggregation "none"))
+		r)))))
   "Abnormal hook whose functions take a plist argument.
 The plist is likely in service of a view in the EBMM.  A viewpoint
 object adds specific filters depending on the needs of the view
