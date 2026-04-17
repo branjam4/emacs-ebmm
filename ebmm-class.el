@@ -34,7 +34,7 @@
 
 ;;; Code:
 (require 'ebmm-serialize)
-(require 'eieio-base)
+(require 'eieio-opt)
 
 ;;;; Class Variables
 (defvar ebmm-objects nil
@@ -42,6 +42,9 @@
 
 (defvar ebmm-class-viewpoints nil
   "Viewpoints for the Enterprise Business Motivation Model, tracked in Emacs.")
+
+(defvar ebmm-class-history nil
+  "History variable for Enterprise Business Motivation Model `completing-read'.")
 
 ;;;; Classes
 (defclass ebmm-base (eieio-instance-tracker eieio-instance-inheritor)
@@ -159,6 +162,12 @@ For this function, it is assumed `ebmm-elements' contains a plist
 		 ;; Docs
 		 ,documentation)))
 	    ebmm-elements))
+
+;;;;; Completing read for element classes
+(defun ebmm-class-completing-read ()
+  "Completing read for EBMM classes."
+  (eieio-read-subclass "Choose an EBMM class: "
+		       'ebmm-base 'ebmm-class-history))
 
 (provide 'ebmm-class)
 ;;; ebmm-class.el ends here

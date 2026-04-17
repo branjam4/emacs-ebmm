@@ -43,6 +43,7 @@ This mode will initialize class and relationship variables if they are
 nil, and in Lisp programs accepts an ARG that should represent an
 object of class function `ebmm-viewpoint'."
   :lighter " EBMM-View"
+  :keymap '()
   (when ebmm-mode
     ;; Running this twice defines superclasses in the correct order.
     (condition-case nil (ebmm-class-generate-elements)
@@ -69,11 +70,39 @@ object of class function `ebmm-viewpoint'."
 			     'ebmm-class-viewpoints))
 	  ((or (pred (not (integerp)))
 	       (pred (> (let views (length ebmm-class-viewpoints)))))
-	   (seq-elt (ebmm-generalized) (1- views)))
+	   (seq-elt (ebmm-elements-generalized) (1- views)))
 	  (_ (or (eieio-instance-tracker-find
 		  ebmm-default-viewpoint 'name
 		  'ebmm-class-viewpoints)
 		 ebmm-mode)))))
+
+;;;; Browsing
+(defun ebmm-set-view (view)
+  "Set VIEW as current for `ebmm-mode'."
+  (interactive (list (ebmm-view-completing-read)))
+  (ebmm-mode view))
+
+(defun ebmm-plantuml-view (&optional view)
+  "Look at a generated plantuml file of an EBMM VIEW."
+  (interactive (list (ebmm-view-completing-read)))
+  (let ((ebmm-mode (or view ebmm-mode)))
+    (ebmm-view-generate ebmm-mode)))
+
+(defun ebmm-documentation (class)
+  "Check documentation for CLASS."
+  (interactive (list (ebmm-class-completing-read)))
+  (describe-symbol class))
+
+(easy-menu-define ebmm-menu ebmm-mode-map
+  "Menu for completion convenience commands."
+  '("Enterprise"
+    ["Browse View (in PlantUML)" ebmm-plantuml-view]
+    "---"
+    ("Other Commands"
+     "---"
+     ["Change View" ebmm-set-view]
+     "---"
+     ["Read Documentation for Element" ebmm-documentation])))
 
 (provide 'ebmm)
 ;;; ebmm.el ends here
