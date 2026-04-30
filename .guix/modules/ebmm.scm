@@ -14,7 +14,7 @@
 (define-public emacs-ebmm
   (package
     (name "emacs-ebmm")
-    (version "0.5.0-git")
+    (version "0.1.0-git")
     (build-system emacs-build-system)
     (propagated-inputs
      (list emacs-plantuml-mode

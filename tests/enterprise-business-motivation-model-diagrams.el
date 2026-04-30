@@ -1,10 +1,6 @@
 ;;; enterprise-business-motivation-model-diagrams.el --- Test EBMM UML in Emacs -*- lexical-binding: t -*-
 
 ;; Author: Brandon Ellington
-;; Version: 0.0.1
-;; Package-Requires: ert
-;; Homepage: https://wednesdaygames.com
-;; Keywords: convenience,enterprise
 
 ;; This file is not part of GNU Emacs
 

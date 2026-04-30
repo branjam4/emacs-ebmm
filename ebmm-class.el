@@ -1,10 +1,6 @@
 ;;; ebmm-class.el --- Enterprise Business Motivation Model elements in Emacs -*- lexical-binding: t -*-
 
 ;; Author: Brandon Ellington
-;; Version: 0.0.1
-;; Package-Requires: eieio-base
-;; Homepage: nil
-;; Keywords: convenience,enterprise
 
 ;; This file is not part of GNU Emacs
 
