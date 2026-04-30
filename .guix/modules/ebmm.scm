@@ -1,9 +1,10 @@
 (define-module (ebmm-package)
-  #:use-modules (guix)
-  #:use-modules (gnu build-system emacs)
-  #:use-modules (gnu packages emacs-xyz)
-  #:use-modules (gnu packages uml)
-  #:use-modules (guix git-download))
+  #:use-module (guix)
+  #:use-module (guix build-system emacs)
+  #:use-module (gnu packages emacs-xyz)
+  #:use-module (gnu packages emacs)
+  #:use-module (gnu packages uml)
+  #:use-module (guix git-download))
 
 (define vcs-file?
   ;; Return true if the given file is under version control.
@@ -18,8 +19,13 @@
     (propagated-inputs
      (list emacs-plantuml-mode
 	   plantuml))
-    (source (local-file "../.." "eamcs-ebmm-checkout"
+    (source (local-file "../.." "emacs-ebmm-checkout"
 			#:recursive? #t
-			#:select? vcs-file?))))
+			#:select? vcs-file?))
+    (home-page #f)
+    (synopsis "Enterprise Business Motivation Model in Emacs")
+    (description "Browse elements and views from the Enterprise Business Motivation
+Model in Emacs.")
+    (license #f)))
 
 emacs-ebmm
