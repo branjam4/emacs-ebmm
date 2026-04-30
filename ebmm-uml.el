@@ -35,10 +35,10 @@
 ;;;; Compiler Declarations
 ;; Defined in ebmm.el
 (defvar ebmm-mode)
+(declare-function ebmm-mode "ebmm")
 
 ;; Defined externally
 (declare-function plantuml-mode "plantuml-mode")
-(declare-function ebmm-mode "ebmm")
 
 ;;;; Custom Variables
 (defcustom ebmm-uml-view-style
