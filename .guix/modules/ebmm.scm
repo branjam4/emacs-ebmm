@@ -22,6 +22,14 @@
     (source (local-file "../.." "emacs-ebmm-checkout"
 			#:recursive? #t
 			#:select? vcs-file?))
+    (arguments
+     (list
+      #:test-command #~(list "emacs" "-Q" "--batch"
+			     "-L" "."
+			     "-L" "tests/"
+			     "-l" "enterprise-business-motivation-model-diagrams.el"
+			     "-f" "ert-run-tests-batch-and-exit")
+      #:exclude #~(cons "^tests/" %default-exclude)))
     (home-page #f)
     (synopsis "Enterprise Business Motivation Model in Emacs")
     (description "Browse elements and views from the Enterprise Business Motivation
