@@ -42,7 +42,92 @@
   :type 'string)
 
 (defcustom ebmm-view-filter-functions
-  '()
+  '(("Customer Viewpoint"
+     (lambda (r)
+       (seq-remove
+	(pcase-lambda
+	  (`(,source ,target . ,(map :target-aggregation :label)))
+	  (and target-aggregation
+	       (eql target 'ebmm-business-model)
+	       (not (eql source 'ebmm-products-and-services))))
+	r))
+     (lambda (r)
+       (seq-uniq
+	(append '((ebmm-brand-promise ebmm-value-proposition
+				      :label ""
+				      :source-aggregation "none"))
+		r))))
+    ("EITA Viewpoint"
+     (lambda (r)
+       (seq-uniq
+	(append
+	 (seq-keep
+	  (lambda (relation)
+	    (pcase relation
+	      (`(ebmm-application ebmm-business-or-information-tool
+				  . ,_rest)
+	       (plist-put relation :label "is a"))))
+	  (default-toplevel-value
+	   'ebmm-associations-alist))
+	 r))))
+    ("Structural View"
+     (lambda (r)
+       (thread-last ebmm-uml-view-style
+		    (seq-remove
+		     (apply-partially #'string-match-p "^left.+direction$"))
+		    (seq-map
+		     (apply-partially #'string-replace "polyline" "ortho"))
+		    (setf ebmm-uml-view-style)))
+     (lambda (r)
+       (seq-keep
+	(lambda (relation)
+	  (pcase relation
+	    (`(ebmm-key-performance-indicator ebmm-process-metric
+					      . ,_rest)
+	     (plist-put relation :label "may be a"))
+	    (`(ebmm-application ebmm-business-or-information-tool
+				. ,_rest)
+	     (plist-put relation :label "is a"))
+	    (`(ebmm-business-construct-or-model ,_taxonomy
+						. ,_rest)
+	     relation)
+	    (`(,_rules-or-policy ebmm-directive
+				 . ,(map :target-aggregation))
+	     relation)
+	    (`(,_mission-or-vision ebmm-principle
+				   . ,(map :target-aggregation))
+	     (if (string= target-aggregation "Generalization")
+		 relation))
+	    ((app (plist-get _ :target-aggregation)
+		  (pred (string= "Generalization")))
+	     relation)))
+	r)))
+    ("Business Model Assessment Viewpoint"
+     (lambda (r)
+       (thread-last
+	 r
+	 (seq-map
+	  (lambda (relation)
+	    (pcase relation
+	      (`(ebmm-application ebmm-business-or-information-tool
+				  . ,_rest)
+	       (plist-put relation :label "is a"))
+	      (`(,_influences ebmm-influencer
+			      . ,(map :target-aggregation))
+	       (plist-put relation :label ""))
+	      (`(,_judgment ebmm-business-judgment
+			    . ,(map :target-aggregation))
+	       (if (string= target-aggregation "Generalization")
+		   (plist-put relation :label "")))
+	      (_ relation))))
+	 (append
+	  '((ebmm-degree-of-rivalry ebmm-industry :label "")
+	    (ebmm-threat-of-substitutes ebmm-industry :label "")
+	    (ebmm-barriers-to-entry ebmm-industry :label "")
+	    (ebmm-supplier-power ebmm-industry :label "")
+	    (ebmm-buyer-power ebmm-industry :label "")))
+	 seq-uniq)))
+    ("Business Model Viewpoint" ebmm-view--remove-blank-composites))
   "Abnormal hook whose functions take a plist argument.
 The plist is likely in service of a view in the EBMM.  A viewpoint
 object adds specific filters depending on the needs of the view
@@ -77,6 +162,20 @@ non-nil, else the hook returns nil."
   "Viewpoints from the Enterprise Business Motivation Model.")
 
 ;;;; Functions
+;;;;; For view filtering
+(defun ebmm-view--remove-blank-composites (relationships)
+  "Remove composite aggregations in plist RELATIONSHIPS.
+This changes `ebmm-element-relationship-alist', make sure it's locally
+bound before changing it."
+  (seq-remove
+   (pcase-lambda
+     (`(,source ,target . ,(map :target-aggregation :label)))
+     (and (member source relationships)
+	  (string-empty-p label)
+	  target-aggregation))
+   relationships))
+
+;;;;; General
 (defun ebmm-view-plist-filter-to-elements ()
   "Filter `ebmm-viewpoints' to interesting ones that contain elements."
   (seq-filter
