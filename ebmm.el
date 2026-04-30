@@ -57,8 +57,8 @@ object of class function `ebmm-viewpoint'."
   (setf ebmm-mode
 	(pcase arg
 	  ((guard (not ebmm-mode)) nil)
-	  ((and (pred (object-p))
-		(app (object-class-name)
+	  ((and (pred (eieio-object-p))
+		(app (eieio-object-class-name)
 		     (pred (child-of-class-p 'ebmm-viewpoint))))
 	   arg)
 	  ((pred (stringp)) (or (eieio-instance-tracker-find

@@ -120,7 +120,7 @@
        (or source target)))
     (seq-group-by
      (pcase-lambda (`(,(app (eql element) source)
-		      ,(app (eql element) target)))
+		      ,(app (eql element) _target)))
        (if source 'to 'from)))
     (seq-map (pcase-lambda (`(,direction . ,relationships))
 	      (cons direction
@@ -188,7 +188,7 @@
   "List all associations of ELEMENT, an object."
   (ebmm-associations-get-all
    (intern (ebmm-serialize-class-name-to-string
-	    (object-class-name element)))))
+	    (eieio-object-class-name element)))))
 
 (cl-defmethod ebmm-associations ((ele-type (subclass ebmm-base)) _
 				 &context ((cl-type-of ebmm-mode)
@@ -210,7 +210,7 @@
     (unless (member ele-type value)
       (error "Element type `%s' not in %s" ele-type name))))
 
-(cl-defmethod ebmm-associations :around ((ele-type (subclass ebmm-base)) _
+(cl-defmethod ebmm-associations :around ((_ele-type (subclass ebmm-base)) _
 					 &context ((cl-type-of ebmm-mode)
 						   (subclass ebmm-viewpoint)))
   "Find the subset of associations for ELE-TYPE in view.

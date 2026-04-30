@@ -174,7 +174,7 @@ This changes `ebmm-element-relationship-alist', make sure it's locally
 bound before changing it."
   (seq-remove
    (pcase-lambda
-     (`(,source ,target . ,(map :target-aggregation :label)))
+     (`(,source ,_target . ,(map :target-aggregation :label)))
      (and (member source relationships)
 	  (string-empty-p label)
 	  target-aggregation))
