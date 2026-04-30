@@ -29,7 +29,12 @@
 
 
 ;;; Code:
+(require 'ebmm-class)
 (require 'ebmm-serialize)
+
+;;;; Compiler Declarations
+;; Defined in ebmm.el
+(defvar ebmm-mode)
 
 ;;;; Variables
 (defvar ebmm-associations-alist
@@ -65,8 +70,9 @@
 					(pred (string= "none"))
 					target-aggregation))
 				      ('multiplicity target-multiplicity)))))))
-		  ('labels `(,(map mt mb rb lb)))))) ; mid-top/bot,
-					; right/left-bot
+		  ;; ('labels `(,(map mt mb rb lb)))))) ; mid-top/bot,
+		  ;;			; right/left-bot
+		  ('labels `(,(map mt))))))
        (let-alist (car properties)
 	 (and (member .ea_type '("Association"
 				 "Aggregation"))
@@ -185,7 +191,7 @@
 	    (object-class-name element)))))
 
 (cl-defmethod ebmm-associations ((ele-type (subclass ebmm-base)) _
-				 &context ((cl-type-of ebmm-viewpoint-mode)
+				 &context ((cl-type-of ebmm-mode)
 					   (subclass ebmm-viewpoint)))
   "List all associations of ELE-TYPE."
   (ebmm-associations-get-all ele-type))
@@ -194,6 +200,36 @@
 				 (_view ebmm-viewpoint))
   "List all associations of ELE-TYPE."
   (ebmm-associations-get-all ele-type))
+
+;;;;; Views
+(cl-defmethod ebmm-associations :before ((ele-type (subclass ebmm-base)) _
+					 &context ((cl-type-of ebmm-mode)
+						   (subclass ebmm-viewpoint)))
+  "Throw an error if ELE-TYPE is not in VIEW."
+  (with-slots (value name) ebmm-mode
+    (unless (member ele-type value)
+      (error "Element type `%s' not in %s" ele-type name))))
+
+(cl-defmethod ebmm-associations :around ((ele-type (subclass ebmm-base)) _
+					 &context ((cl-type-of ebmm-mode)
+						   (subclass ebmm-viewpoint)))
+  "Find the subset of associations for ELE-TYPE in view.
+The view in this method comes from variable `ebmm-viewpoint'."
+  (with-slots (value) ebmm-mode
+    (let ((ebmm-associations-alist
+	   (thread-last ebmm-associations-alist
+			(seq-filter
+			 (pcase-lambda
+			   (`(,(app (seq-contains-p value) source-in-view-p)
+			      ,(app (seq-contains-p value) target-in-view-p)))
+			   (and source-in-view-p target-in-view-p))))))
+      (cl-call-next-method))))
+
+(cl-defmethod ebmm-associations :around ((ele-type (subclass ebmm-base))
+					 (view ebmm-viewpoint))
+  "Find the subset of associations for ELE-TYPE that are in VIEW."
+  (let ((ebmm-mode view))
+    (ebmm-associations ele-type nil)))
 
 (provide 'ebmm-associations)
 ;;; ebmm-associations.el ends here

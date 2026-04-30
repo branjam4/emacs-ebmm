@@ -30,6 +30,8 @@
 
 ;;; Code:
 (require 'ebmm-model)
+(require 'map)
+(require 'subr-x)
 
 ;;;; Variables
 (defvar ebmm-elements
@@ -41,7 +43,7 @@
 			      properties
 			      ('extendedProperties
 			       `(,(map ('package_name
-					(or (pred (not (seq-contains
+					(or (pred (not (seq-contains-p
 							'("Base Types"
 							  "Model Elements"))))
 					    package_name)))))

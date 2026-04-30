@@ -34,6 +34,7 @@
 
 ;;; Code:
 (require 'ebmm-serialize)
+(require 'eieio-base)
 (require 'eieio-opt)
 
 ;;;; Class Variables
@@ -130,7 +131,7 @@ It depends on SUPERCLASSES and has DOCUMENTATION."
 For this function, it is assumed `ebmm-elements' contains a plist
  corresponding with slots in class function `ebmm-base'.  See
  `defebmm-class' for more details."
-  (ebmm-element-add-superclasses)
+  (ebmm-elements-add-superclasses)
   (seq-keep (pcase-lambda ((map :name :eaid
 				:superclasses
 				:created :modified

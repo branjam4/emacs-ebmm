@@ -28,20 +28,15 @@
 
 
 ;;; Code:
-(require 'ebmm-serialize)
+(require 'ebmm-class)
+
+(defgroup ebmm-view '()
+  "Settings related to views in the Enterprise Business Motivation Model."
+  :prefix "ebmm-view-"
+  :group 'ebmm)
 
 ;;;; Custom Variables
 (defcustom ebmm-view-filters-alist
-  '()
-  "Set filters for viewpoints."
-  :type '(alist :key-type string
-		:value-type (repeat function)))
-
-(defcustom ebmm-default-viewpoint "Primary View"
-  "When activating `ebmm-viewpoint-mode' with no args, use this view by default."
-  :type 'string)
-
-(defcustom ebmm-view-filter-functions
   '(("Customer Viewpoint"
      (lambda (r)
        (seq-remove
@@ -128,6 +123,16 @@
 	    (ebmm-buyer-power ebmm-industry :label "")))
 	 seq-uniq)))
     ("Business Model Viewpoint" ebmm-view--remove-blank-composites))
+  "Set filters for viewpoints."
+  :type '(alist :key-type string
+		:value-type (repeat function)))
+
+(defcustom ebmm-view-default "Primary View"
+  "When activating `ebmm-mode' with no args, use this view by default."
+  :type 'string)
+
+(defcustom ebmm-view-filter-functions
+  '()
   "Abnormal hook whose functions take a plist argument.
 The plist is likely in service of a view in the EBMM.  A viewpoint
 object adds specific filters depending on the needs of the view
@@ -199,8 +204,8 @@ For this function, it is assumed `ebmm-viewpoints' contains a plist
       :viewpoint-doc documentation))
 	    (ebmm-view-plist-filter-to-elements)))
 
-(defun ebmm-view-set-viewpoint-filters ()
-  "Set viewpoint filters based on `ebmm-viewpoint-filters-alist'."
+(defun ebmm-view-set-filters ()
+  "Set viewpoint filters based on `ebmm-view-filters-alist'."
   (interactive)
   (seq-do (pcase-lambda (`(,name . ,functions))
 	    (setf (slot-value (eieio-instance-tracker-find

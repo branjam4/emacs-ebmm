@@ -2,8 +2,6 @@
 
 ;; Author: Brandon Ellington
 ;; Version: 0.0.1
-;; Package-Requires: eieio-base
-;; Homepage: nil
 ;; Keywords: convenience,enterprise
 
 ;; This file is not part of GNU Emacs
@@ -33,8 +31,12 @@
 
 
 ;;; Code:
-(require 'ebmm-class)
-(require 'ebmm-view)
+(require 'ebmm-uml)
+
+(defgroup ebmm '()
+  "Settings related to the Enterprise Business Motivation Model."
+  :group 'convenience
+  :group 'enterprise)
 
 ;;;; Mode
 (define-minor-mode ebmm-mode
@@ -63,18 +65,23 @@ object of class function `ebmm-viewpoint'."
 				 arg 'name
 				 'ebmm-class-viewpoints)
 				(eieio-instance-tracker-find
-				 ebmm-default-viewpoint 'name
+				 ebmm-view-default 'name
 				 'ebmm-class-viewpoints)))
 	  ((pred (symbolp)) (eieio-instance-tracker-find
-			     ebmm-default-viewpoint 'name
+			     ebmm-view-default 'name
 			     'ebmm-class-viewpoints))
-	  ((or (pred (not (integerp)))
-	       (pred (> (let views (length ebmm-class-viewpoints)))))
+	  ((and (let views (length ebmm-class-viewpoints))
+		(pred (not (integerp)))
+		(pred (> views)))
 	   (seq-elt (ebmm-elements-generalized) (1- views)))
 	  (_ (or (eieio-instance-tracker-find
-		  ebmm-default-viewpoint 'name
+		  ebmm-view-default 'name
 		  'ebmm-class-viewpoints)
 		 ebmm-mode)))))
+
+(define-globalized-minor-mode ebmm-global-mode ebmm-mode
+  (lambda () (unless (or ebmm-mode (minibufferp)) (ebmm-mode)))
+  :keymap '())
 
 ;;;; Browsing
 (defun ebmm-set-view (view)

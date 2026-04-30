@@ -27,7 +27,7 @@
 
 ;;; Code:
 (require 'ert)
-(require 'ebmm-views)
+(require 'ebmm)
 
 (defmacro should-expect (test expected)
   "Wrapper for `should' using `pcase' patterns to compare EXPECTED with TEST.

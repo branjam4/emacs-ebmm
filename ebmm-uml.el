@@ -28,7 +28,20 @@
 
 
 ;;; Code:
-(require 'ebmm-elements)
+(require 'ebmm-associations)
+(require 'ebmm-view)
+
+(defgroup ebmm-uml '()
+  "Settings related to UML views for the Enterprise Business Motivation Model."
+  :prefix "ebmm-uml-"
+  :group 'ebmm)
+
+;;;; Compiler Declarations
+;; Defined in ebmm.el
+(defvar ebmm-mode)
+
+;; Defined externally
+(declare-function plantuml-mode "plantuml-mode")
 
 ;;;; Custom Variables
 (defcustom ebmm-uml-view-style
@@ -97,10 +110,10 @@
 	      (ebmm-uml-view-style ebmm-uml-view-style))
 	  (with-current-buffer buffer
 	    (or (eql major-mode 'plantuml-mode)
-		(and (featurep (seq-find (apply-partially #'seq-contains features)
+		(and (featurep (seq-find (apply-partially #'seq-contains-p features)
 				     '(plantuml-mode plantuml-mode-autoloads)))
 		 (plantuml-mode)))
-	    (ebmm-viewpoint-mode view)
+	    (ebmm-mode view)
 	    (erase-buffer)
 	    (when
 		(run-hook-with-args-until-failure
