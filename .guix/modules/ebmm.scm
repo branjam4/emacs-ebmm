@@ -2,7 +2,6 @@
   #:use-module (guix)
   #:use-module (guix build-system emacs)
   #:use-module (gnu packages emacs-xyz)
-  #:use-module (gnu packages emacs)
   #:use-module (gnu packages uml)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:))
