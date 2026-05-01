@@ -35,5 +35,3 @@
     (description "Browse elements and views from the Enterprise Business Motivation
 Model in Emacs.")
     (license license:cc0)))
-
-emacs-ebmm
