@@ -1,10 +1,6 @@
 ;;; ebmm-class.el --- Enterprise Business Motivation Model elements in Emacs -*- lexical-binding: t -*-
 
 ;; Author: Brandon Ellington
-;; Version: 0.0.1
-;; Package-Requires: eieio-base
-;; Homepage: nil
-;; Keywords: convenience,enterprise
 
 ;; This file is not part of GNU Emacs
 
@@ -35,6 +31,7 @@
 ;;; Code:
 (require 'ebmm-serialize)
 (require 'eieio-base)
+(require 'eieio-opt)
 
 ;;;; Class Variables
 (defvar ebmm-objects nil
@@ -42,6 +39,9 @@
 
 (defvar ebmm-class-viewpoints nil
   "Viewpoints for the Enterprise Business Motivation Model, tracked in Emacs.")
+
+(defvar ebmm-class-history nil
+  "History variable for Enterprise Business Motivation Model `completing-read'.")
 
 ;;;; Classes
 (defclass ebmm-base (eieio-instance-tracker eieio-instance-inheritor)
@@ -127,7 +127,7 @@ It depends on SUPERCLASSES and has DOCUMENTATION."
 For this function, it is assumed `ebmm-elements' contains a plist
  corresponding with slots in class function `ebmm-base'.  See
  `defebmm-class' for more details."
-  (ebmm-element-add-superclasses)
+  (ebmm-elements-add-superclasses)
   (seq-keep (pcase-lambda ((map :name :eaid
 				:superclasses
 				:created :modified
@@ -159,6 +159,12 @@ For this function, it is assumed `ebmm-elements' contains a plist
 		 ;; Docs
 		 ,documentation)))
 	    ebmm-elements))
+
+;;;;; Completing read for element classes
+(defun ebmm-class-completing-read ()
+  "Completing read for EBMM classes."
+  (eieio-read-subclass "Choose an EBMM class: "
+		       'ebmm-base 'ebmm-class-history))
 
 (provide 'ebmm-class)
 ;;; ebmm-class.el ends here

@@ -1,10 +1,6 @@
 ;;; ebmm-associations.el --- Enterprise Business Motivation Model relationships -*- lexical-binding: t -*-
 
 ;; Author: Brandon Ellington
-;; Version: 0.0.1
-;; Package-Requires: eieio-base
-;; Homepage: nil
-;; Keywords: convenience,enterprise
 
 ;; This file is not part of GNU Emacs
 
@@ -29,7 +25,12 @@
 
 
 ;;; Code:
+(require 'ebmm-class)
 (require 'ebmm-serialize)
+
+;;;; Compiler Declarations
+;; Defined in ebmm.el
+(defvar ebmm-mode)
 
 ;;;; Variables
 (defvar ebmm-associations-alist
@@ -65,8 +66,9 @@
 					(pred (string= "none"))
 					target-aggregation))
 				      ('multiplicity target-multiplicity)))))))
-		  ('labels `(,(map mt mb rb lb)))))) ; mid-top/bot,
-					; right/left-bot
+		  ;; ('labels `(,(map mt mb rb lb)))))) ; mid-top/bot,
+		  ;;			; right/left-bot
+		  ('labels `(,(map mt))))))
        (let-alist (car properties)
 	 (and (member .ea_type '("Association"
 				 "Aggregation"))
@@ -114,7 +116,7 @@
        (or source target)))
     (seq-group-by
      (pcase-lambda (`(,(app (eql element) source)
-		      ,(app (eql element) target)))
+		      ,(app (eql element) _target)))
        (if source 'to 'from)))
     (seq-map (pcase-lambda (`(,direction . ,relationships))
 	      (cons direction
@@ -182,10 +184,10 @@
   "List all associations of ELEMENT, an object."
   (ebmm-associations-get-all
    (intern (ebmm-serialize-class-name-to-string
-	    (object-class-name element)))))
+	    (eieio-object-class-name element)))))
 
 (cl-defmethod ebmm-associations ((ele-type (subclass ebmm-base)) _
-				 &context ((cl-type-of ebmm-viewpoint-mode)
+				 &context ((cl-type-of ebmm-mode)
 					   (subclass ebmm-viewpoint)))
   "List all associations of ELE-TYPE."
   (ebmm-associations-get-all ele-type))
@@ -194,6 +196,36 @@
 				 (_view ebmm-viewpoint))
   "List all associations of ELE-TYPE."
   (ebmm-associations-get-all ele-type))
+
+;;;;; Views
+(cl-defmethod ebmm-associations :before ((ele-type (subclass ebmm-base)) _
+					 &context ((cl-type-of ebmm-mode)
+						   (subclass ebmm-viewpoint)))
+  "Throw an error if ELE-TYPE is not in VIEW."
+  (with-slots (value name) ebmm-mode
+    (unless (member ele-type value)
+      (error "Element type `%s' not in %s" ele-type name))))
+
+(cl-defmethod ebmm-associations :around ((_ele-type (subclass ebmm-base)) _
+					 &context ((cl-type-of ebmm-mode)
+						   (subclass ebmm-viewpoint)))
+  "Find the subset of associations for ELE-TYPE in view.
+The view in this method comes from variable `ebmm-viewpoint'."
+  (with-slots (value) ebmm-mode
+    (let ((ebmm-associations-alist
+	   (thread-last ebmm-associations-alist
+			(seq-filter
+			 (pcase-lambda
+			   (`(,(app (seq-contains-p value) source-in-view-p)
+			      ,(app (seq-contains-p value) target-in-view-p)))
+			   (and source-in-view-p target-in-view-p))))))
+      (cl-call-next-method))))
+
+(cl-defmethod ebmm-associations :around ((ele-type (subclass ebmm-base))
+					 (view ebmm-viewpoint))
+  "Find the subset of associations for ELE-TYPE that are in VIEW."
+  (let ((ebmm-mode view))
+    (ebmm-associations ele-type nil)))
 
 (provide 'ebmm-associations)
 ;;; ebmm-associations.el ends here

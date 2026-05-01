@@ -1,10 +1,6 @@
 ;;; ebmm-view.el --- Enterprise Business Motivation Model views in Emacs -*- lexical-binding: t -*-
 
 ;; Author: Brandon Ellington
-;; Version: 0.0.1
-;; Package-Requires: eieio-base
-;; Homepage: nil
-;; Keywords: convenience,enterprise
 
 ;; This file is not part of GNU Emacs
 
@@ -28,18 +24,117 @@
 
 
 ;;; Code:
-(require 'ebmm-serialize)
+(require 'ebmm-class)
+
+(defgroup ebmm-view '()
+  "Settings related to views in the Enterprise Business Motivation Model."
+  :prefix "ebmm-view-"
+  :group 'ebmm)
 
 ;;;; Custom Variables
 (defcustom ebmm-view-filters-alist
-  '()
+  '(("Customer Viewpoint"
+     (lambda (r)
+       (seq-remove
+	(pcase-lambda
+	  (`(,source ,target . ,(map :target-aggregation :label)))
+	  (and target-aggregation
+	       (eql target 'ebmm-business-model)
+	       (not (eql source 'ebmm-products-and-services))))
+	r))
+     (lambda (r)
+       (seq-uniq
+	(append '((ebmm-brand-promise ebmm-value-proposition
+				      :label ""
+				      :source-aggregation "none"))
+		r))))
+    ("EITA Viewpoint"
+     (lambda (r)
+       (seq-uniq
+	(append
+	 (seq-keep
+	  (lambda (relation)
+	    (pcase relation
+	      (`(ebmm-application ebmm-business-or-information-tool
+				  . ,_rest)
+	       (plist-put relation :label "is a"))))
+	  (default-toplevel-value
+	   'ebmm-associations-alist))
+	 r))))
+    ("Structural View"
+     (lambda (r)
+       (thread-last ebmm-uml-view-style
+		    (seq-remove
+		     (apply-partially #'string-match-p "^left.+direction$"))
+		    (seq-map
+		     (apply-partially #'string-replace "polyline" "ortho"))
+		    (setf ebmm-uml-view-style)))
+     (lambda (r)
+       (seq-keep
+	(lambda (relation)
+	  (pcase relation
+	    (`(ebmm-key-performance-indicator ebmm-process-metric
+					      . ,_rest)
+	     (plist-put relation :label "may be a"))
+	    (`(ebmm-application ebmm-business-or-information-tool
+				. ,_rest)
+	     (plist-put relation :label "is a"))
+	    (`(ebmm-business-construct-or-model ,_taxonomy
+						. ,_rest)
+	     relation)
+	    (`(,_rules-or-policy ebmm-directive
+				 . ,(map :target-aggregation))
+	     relation)
+	    (`(,_mission-or-vision ebmm-principle
+				   . ,(map :target-aggregation))
+	     (if (string= target-aggregation "Generalization")
+		 relation))
+	    ((app (plist-get _ :target-aggregation)
+		  (pred (string= "Generalization")))
+	     relation)))
+	r)))
+    ("Business Model Assessment Viewpoint"
+     (lambda (r)
+       (thread-last
+	 r
+	 (seq-map
+	  (lambda (relation)
+	    (pcase relation
+	      (`(ebmm-application ebmm-business-or-information-tool
+				  . ,_rest)
+	       (plist-put relation :label "is a"))
+	      (`(,_influences ebmm-influencer
+			      . ,(map :target-aggregation))
+	       (plist-put relation :label ""))
+	      (`(,_judgment ebmm-business-judgment
+			    . ,(map :target-aggregation))
+	       (if (string= target-aggregation "Generalization")
+		   (plist-put relation :label "")))
+	      (_ relation))))
+	 (append
+	  '((ebmm-degree-of-rivalry ebmm-industry :label "")
+	    (ebmm-threat-of-substitutes ebmm-industry :label "")
+	    (ebmm-barriers-to-entry ebmm-industry :label "")
+	    (ebmm-supplier-power ebmm-industry :label "")
+	    (ebmm-buyer-power ebmm-industry :label "")))
+	 seq-uniq)))
+    ("Business Model Viewpoint" ebmm-view--remove-blank-composites))
   "Set filters for viewpoints."
   :type '(alist :key-type string
 		:value-type (repeat function)))
 
-(defcustom ebmm-default-viewpoint "Primary View"
-  "When activating `ebmm-viewpoint-mode' with no args, use this view by default."
+(defcustom ebmm-view-default "Primary View"
+  "When activating `ebmm-mode' with no args, use this view by default."
   :type 'string)
+
+(defcustom ebmm-view-filter-functions
+  '()
+  "Abnormal hook whose functions take a plist argument.
+The plist is likely in service of a view in the EBMM.  A viewpoint
+object adds specific filters depending on the needs of the view
+stakeholders.  Try functions in order; all functions must return
+non-nil, else the hook returns nil."
+  :type 'hook)
 
 ;;;; Variables
 (defvar ebmm-view-plist
@@ -68,6 +163,20 @@
   "Viewpoints from the Enterprise Business Motivation Model.")
 
 ;;;; Functions
+;;;;; For view filtering
+(defun ebmm-view--remove-blank-composites (relationships)
+  "Remove composite aggregations in plist RELATIONSHIPS.
+This changes `ebmm-element-relationship-alist', make sure it's locally
+bound before changing it."
+  (seq-remove
+   (pcase-lambda
+     (`(,source ,_target . ,(map :target-aggregation :label)))
+     (and (member source relationships)
+	  (string-empty-p label)
+	  target-aggregation))
+   relationships))
+
+;;;;; General
 (defun ebmm-view-plist-filter-to-elements ()
   "Filter `ebmm-viewpoints' to interesting ones that contain elements."
   (seq-filter
@@ -91,8 +200,8 @@ For this function, it is assumed `ebmm-viewpoints' contains a plist
       :viewpoint-doc documentation))
 	    (ebmm-view-plist-filter-to-elements)))
 
-(defun ebmm-view-set-viewpoint-filters ()
-  "Set viewpoint filters based on `ebmm-viewpoint-filters-alist'."
+(defun ebmm-view-set-filters ()
+  "Set viewpoint filters based on `ebmm-view-filters-alist'."
   (interactive)
   (seq-do (pcase-lambda (`(,name . ,functions))
 	    (setf (slot-value (eieio-instance-tracker-find

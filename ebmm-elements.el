@@ -1,10 +1,6 @@
 ;;; ebmm-elements.el --- Enterprise Business Motivation Model elements in Emacs -*- lexical-binding: t -*-
 
 ;; Author: Brandon Ellington
-;; Version: 0.0.1
-;; Package-Requires: eieio-base
-;; Homepage: nil
-;; Keywords: convenience,enterprise
 
 ;; This file is not part of GNU Emacs
 
@@ -30,6 +26,8 @@
 
 ;;; Code:
 (require 'ebmm-model)
+(require 'map)
+(require 'subr-x)
 
 ;;;; Variables
 (defvar ebmm-elements
@@ -41,7 +39,7 @@
 			      properties
 			      ('extendedProperties
 			       `(,(map ('package_name
-					(or (pred (not (seq-contains
+					(or (pred (not (seq-contains-p
 							'("Base Types"
 							  "Model Elements"))))
 					    package_name)))))
