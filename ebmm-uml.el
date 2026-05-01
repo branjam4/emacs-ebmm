@@ -137,7 +137,7 @@
 			   ,@(ebmm-uml-view-extra)
 			   "\n@enduml")
 			 "\n")))))
-	  (display-buffer buffer)))))
+	  (window-buffer (display-buffer buffer))))))
 
 (provide 'ebmm-uml)
 ;;; ebmm-uml.el ends here

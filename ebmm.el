@@ -100,6 +100,19 @@ object of class function `ebmm-viewpoint'."
   (interactive (list (ebmm-class-completing-read)))
   (describe-symbol class))
 
+;;;###autoload
+(defun ebmm-plantuml-demo (&optional view)
+  "Demonstration function for appliances or containers.
+Requires PlantUML for image generation.  Interactively, choose VIEW to
+demo."
+  (interactive (list (ebmm-view-completing-read)))
+  ;; Set EBMM mode to the Business Model view non-interactively,
+  ;; generate a PlantUML buffer from the elements and associations,
+  ;; then open an SVG diagram in another window.
+  (with-current-buffer
+      (ebmm-plantuml-view (ebmm-mode (or view "Business Model View")))
+    (plantuml-preview 4)))
+
 (easy-menu-define ebmm-menu ebmm-mode-map
   "Menu for completion convenience commands."
   '("Enterprise"
