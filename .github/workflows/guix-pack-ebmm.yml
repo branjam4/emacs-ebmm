@@ -43,12 +43,12 @@ jobs:
         run: guix pack --save-provenance -L $GITHUB_WORKSPACE/.guix/modules --format=docker --root=ebmm-docker.tar.gz -S /bin=bin --entry-point=bin/emacs --entry-point-argument="--eval='(ebmm-plantuml-demo)'" -m $GITHUB_WORKSPACE/.guix/manifest.scm
       # Upload all artifacts
       - name: Upload pack (Relocatable Binary)
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: EBMM Relocatable Binary
           path: ebmm.tar.bz2
       - name: Upload pack (Docker)
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: EBMM Docker image
           path: 'ebmm-docker.tar.gz'
