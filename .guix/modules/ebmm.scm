@@ -4,7 +4,8 @@
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages emacs)
   #:use-module (gnu packages uml)
-  #:use-module (guix git-download))
+  #:use-module (guix git-download)
+  #:use-module ((guix licenses) #:prefix license:))
 
 (define vcs-file?
   ;; Return true if the given file is under version control.
@@ -34,6 +35,6 @@
     (synopsis "Enterprise Business Motivation Model in Emacs")
     (description "Browse elements and views from the Enterprise Business Motivation
 Model in Emacs.")
-    (license #f)))
+    (license license:cc0)))
 
 emacs-ebmm
