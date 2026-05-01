@@ -1,0 +1,114 @@
+#+title: Enterprise Business Motivation Model for Emacs
+
+Use Emacs to navigate elements and views from the [[https://motivationmodel.com][first open source
+Enterprise Architecture Metamodel]].
+
+* Installation
+** Example Configuration (with use-package)
+#+begin_src elisp
+  (use-package ebmm
+    :vc (:url "https://github.com/branjam4/emacs-ebmm.git"
+	 :rev :newest)
+    :commands (ebmm-mode ebmm-global-mode))
+#+end_src
+** Run in Appliance/Container
+On GitHub:
+1. Check the Packages section below this readme.
+
+   The Packages section should contain instructions for pulling a
+   Docker image, i.e.:
+    #+begin_src sh
+      $ docker pull ghcr.io/branjam4/emacs-ebmm:main
+      $ # run the image with next command
+      $ docker run ghcr.io/branjam4/emacs-ebmm:main
+  #+end_src
+
+2. Check the Actions tab for artifacts.
+
+   If on Linux, a compressed archive is available to download and can
+   be used as follows:
+   #+begin_src sh
+     $ tar -xf ebmm.tar.bz2
+     $ ./bin/emacs --eval='(ebmm-plantuml-demo)'
+   #+end_src
+* Example Usage
+Requires PlantUML and plantuml-mode:
+#+begin_src elisp
+  ;; Set EBMM mode to the Business Model view, generate a PlantUML
+  ;; buffer from the elements and associations, then open an SVG diagram
+  ;; in another window.
+  (with-current-buffer
+      (ebmm-plantuml-view (ebmm-mode "Business Model Viewpoint"))
+    (plantuml-preview 4))
+#+end_src
+* What is the Enterprise Business Motivation Model?
+[[https://github.com/EnterpriseBusinessMotivationModel/Sparxmodel#what-is-the-ebmm][Quoted from the model's author]], Nick Malik:
+#+begin_quote
+The Enterprise Business Motivation Model is an Enterprise Architecture
+metamodel.  That means it is a visual description of the concepts in
+use in Enterprise Architecture, along with one or more relationships
+between the concepts to aid in understanding them in relation to one
+another.  Like any metamodel, it is used to create models where each
+item in the created model is of a type defined in the metamodel.  It
+is this nature of inheritance that makes the metamodel powerful.  Note
+that this metamodel predates the first one released by The Open Group
+in their TOGAF framework.  There may be some overlap and potentially
+disagreement.  That should be expected.
+#+end_quote
+
+** Browsing the metamodel
+Adapted from [[https://motivationmodel.com/ebmm5][EBMM Documentation (see =Enterprise BMM v4 >
+Documentation > Overview > ⪻document⪼ Description=)]]:
+
+[[file:assets/EAID_3B0E909C_8AE7_4525_A94E_7C55A9FF2894_1.PNG]]
+#+begin_quote
+When first approaching the Enterprise Business Motivation Model, it
+helps to start with the highest level objects and to see the model as
+a fairly simple construction.
+
+The EBMM is, first and foremost, a way to describe a complex
+organization that allows interesting insight to be gained. It is a
+tool, a competitive weapon, to be wielded by any business leader that
+is interested in moving his or her business from simply being “good”
+to being truly great.
+
+Understanding about a business does not emerge from a single method or
+approach. It emerges because the basic information about the business
+is so well organized that a hundred different methods can be applied,
+each to refine or improve the business in some key way.
+
+The information structure for describing a business must, therefore,
+cope with information that may exist in many forms, and different
+levels of detail. The EBMM provides this flexibility, because the
+various elements of a business can be described and refined
+independently, producing interesting observations and ideas for
+enhancement, without the need for every detail to be captured
+first.
+
+The EBMM itself is not complex. Yet it is more complex than many of
+the models in use by business consultants. In developing this model,
+we took the advice of Einstein: Make everything as simple as possible,
+but not simpler. That is precisely what the Enterprise Business
+Motivation Model is, and does. It is a simple model, but not too
+simple. Interesting and useful illustrations can be created
+specifically because of this rich balance between simplicity and
+completeness.
+#+end_quote
+* Why use Emacs to interact with the metamodel?
+There are 104 model elements, over 200 relationships between those
+elements, and dozens of views over those elements. While one can
+[[https://motivationmodel.com/ebmm5][browse through the model online]], or [[https://github.com/EnterpriseBusinessMotivationModel/Sparxmodel/EBMM%20XMI%20v5.0.zip][grab a copy of the Sparx XMI]] and
+extract desired documentation through queries, the author of this
+package believes Emacs is one of the better local interfaces for
+navigating a model of this size: larger than what fits in working
+memory when you manually refer to it, but not so large that only big
+AI models or clever programming can make sense of it.
+* Future Work on the Horizon
+Another benefit of working with the EBMM in Emacs is being able to
+overlay the ontology on top of any other models that expose text
+interfaces. The author anticipates:
+1. Collating information from business transactions, directives, and
+   models;
+2. Displaying the information under their appropriate EBMM element;
+3. Displaying the information in any model constructs (e.g a Business
+   Scorecard) containing the associated element.
