@@ -1,4 +1,4 @@
 (use-modules (gnu packages emacs)
-	     (ebmm-package))
+	     (ebmm))
 
 (packages->manifest (list emacs emacs-ebmm))

@@ -1,4 +1,4 @@
-(define-module (ebmm-package)
+(define-module (ebmm)
   #:use-module (guix)
   #:use-module (guix build-system emacs)
   #:use-module (gnu packages emacs-xyz)
