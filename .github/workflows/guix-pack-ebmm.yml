@@ -13,6 +13,7 @@ env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
+  GUIXPACKAGEPATH: $GITHUBWORKSPACE/.guix/modules
 
 jobs:
   build:
