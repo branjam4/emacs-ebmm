@@ -31,8 +31,8 @@ On GitHub:
      $ tar -xf ebmm.tar.bz2
      $ ./bin/emacs --eval='(ebmm-plantuml-demo)'
    #+end_src
-* Example Usage
-Requires PlantUML and plantuml-mode:
+* Example Usage (requires PlantUML and plantuml-mode)
+** Check view (using Emacs Lisp)
 #+begin_src elisp
   ;; Set EBMM mode to the Business Model view, generate a PlantUML
   ;; buffer from the elements and associations, then open an SVG diagram
@@ -41,6 +41,25 @@ Requires PlantUML and plantuml-mode:
       (ebmm-plantuml-view (ebmm-mode "Business Model Viewpoint"))
     (plantuml-preview 4))
 #+end_src
+** Check view (using menus)
+1. Require/load the =ebmm= library: using an installation method above
+   should take care of this. If you have installed this package
+   another way, use ~load-library~ interactively, or ~(require 'ebmm)~
+   in lisp.
+2. Activate ~ebmm-mode~: on a default Emacs install, press the Alt key
+   with x, and put "ebmm-mode" in the minibuffer (in Emacs terms, type
+   =M-x ebmm-mode=).
+3. If ~menu-bar-mode~ (on by default) is activated, you should see a
+   menu at the top named /"Enterprise"/. You can click on this menu
+   and select =Browse View (in PlantUML)=. You can also right click in
+   the buffer and find the /"Enterprise"/ submenu if ~menu-bar-mode~
+   is off.
+4. Select a view from the prompt in the minibuffer. It should open a
+   PlantUML buffer showing the classes/elements and relationships
+   within the view.
+5. (Optional) If you have PlantUML and ~plantuml-mode~ installed,
+   press =C-c C-c= (or =M-x plantuml-preview=) to see a diagram of the
+   view.
 * What is the Enterprise Business Motivation Model?
 [[https://github.com/EnterpriseBusinessMotivationModel/Sparxmodel#what-is-the-ebmm][Quoted from the model's author]], Nick Malik:
 #+begin_quote
