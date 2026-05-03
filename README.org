@@ -13,22 +13,18 @@ Enterprise Architecture Metamodel]].
 #+end_src
 ** Run in Appliance/Container
 On GitHub:
-1. Check the Packages section below this readme.
-
-   The Packages section should contain instructions for pulling a
-   Docker image, i.e.:
+1. With Docker, download and run the image from the GitHub Container
+   Registry:
     #+begin_src sh
       $ docker pull ghcr.io/branjam4/emacs-ebmm:main
       $ # run the image with next command
       $ docker run ghcr.io/branjam4/emacs-ebmm:main
   #+end_src
 
-2. Check the Actions tab for artifacts.
-
-   If on Linux, a compressed archive is available to download and can
-   be used as follows:
+2. If on Linux, a compressed archive is available in [[https://github.com/branjam4/emacs-ebmm/releases/tag/v0.1][Releases]] to
+   download and can be used as follows:
    #+begin_src sh
-     $ tar -xf ebmm.tar.bz2
+     $ tar -xf v0-1-emacs-emacs-ebmm-tarball-pack.tar.bz2
      $ ./bin/emacs --eval='(ebmm-plantuml-demo)'
    #+end_src
 * Example Usage (requires PlantUML and plantuml-mode)
