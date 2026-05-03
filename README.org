@@ -16,9 +16,9 @@ On GitHub:
 1. With Docker, download and run the image from the GitHub Container
    Registry:
     #+begin_src sh
-      $ docker pull ghcr.io/branjam4/emacs-ebmm:main
+      $ docker pull ghcr.io/branjam4/emacs-ebmm:latest
       $ # run the image with next command
-      $ docker run ghcr.io/branjam4/emacs-ebmm:main
+      $ docker run ghcr.io/branjam4/emacs-ebmm:latest
   #+end_src
 
 2. If on Linux, a compressed archive is available in [[https://github.com/branjam4/emacs-ebmm/releases/tag/v0.1][Releases]] to
