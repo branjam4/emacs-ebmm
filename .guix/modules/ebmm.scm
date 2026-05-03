@@ -19,7 +19,7 @@
     (propagated-inputs
      (list emacs-plantuml-mode
 	   plantuml))
-    (source (local-file "../.." "emacs-ebmm-checkout"
+    (source (local-file "." "emacs-ebmm-checkout"
 			#:recursive? #t
 			#:select? vcs-file?))
     (arguments
